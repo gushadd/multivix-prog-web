@@ -1,5 +1,8 @@
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
+
+import Header from "./components/Header.vue";
+
 import Button from "primevue/button";
 
 const toggleDarkMode = () => {
@@ -8,7 +11,10 @@ const toggleDarkMode = () => {
 </script>
 
 <template>
-    <Button @click="toggleDarkMode">Toggle dark mode</Button>
+    <Header/>
+    <main class="p-8">
+        <Button @click="toggleDarkMode">Toggle dark mode</Button>
+    </main>
 </template>
 
 <style scoped></style>
