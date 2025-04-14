@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from "vue-router";
 
 import Header from "./components/Header.vue";
+import CategorySelector from "./components/CategorySelector.vue";
 
 import Button from "primevue/button";
 
@@ -12,8 +13,9 @@ import Button from "primevue/button";
 
 <template>
     <Header />
-    <main class="p-8">
-        <Button>Clique</Button>
+    <CategorySelector />
+    <main class="p-10">
+        <RouterView />
     </main>
 </template>
 
