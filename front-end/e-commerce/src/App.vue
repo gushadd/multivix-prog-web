@@ -5,15 +5,15 @@ import Header from "./components/Header.vue";
 
 import Button from "primevue/button";
 
-const toggleDarkMode = () => {
-    document.documentElement.classList.toggle("my-app-dark");
-};
+// const toggleDarkMode = () => {
+//     document.documentElement.classList.toggle("my-app-dark");
+// };
 </script>
 
 <template>
-    <Header/>
+    <Header />
     <main class="p-8">
-        <Button @click="toggleDarkMode">Toggle dark mode</Button>
+        <Button>Clique</Button>
     </main>
 </template>
 
