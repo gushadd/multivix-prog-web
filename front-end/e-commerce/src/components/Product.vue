@@ -35,8 +35,9 @@ defineProps({
 }
 
 .image-wrapper {
-    min-height: 25vh;
-    max-height: 25vh;
+    min-height: 250px;
+    max-height: 250px;
+    overflow: hidden;
 }
 
 .product-info {
