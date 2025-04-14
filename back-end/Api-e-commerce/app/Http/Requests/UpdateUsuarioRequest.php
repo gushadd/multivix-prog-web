@@ -11,7 +11,7 @@ class UpdateUsuarioRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,10 +22,27 @@ class UpdateUsuarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nome' => 'required|string|min:3|max:255',
-            'email' => 'required|email|unique:usuarios,email',
-            'password' => 'required|min:6',
-            'data_nascimento' => ['required', 'date', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
+            'nome' => 'string|min:3|max:255',
+            'email' => 'email|unique:usuarios,email',
+            'password' => 'min:6',
+            'data_nascimento' => ['date', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'data_nascimento.date' => 'A data de nascimento precisa ser uma data válida.',
+            'data_nascimento.before_or_equal' => 'Você precisa ter pelo menos 18 anos de idade.',
+
+            'nome.string' => 'O nome precisa ser uma string.',
+            'nome.min' => 'O nome deve ter no mínimo 3 caracteres.',
+            'nome.max' => 'O nome pode ter no máximo 255 caracteres.',
+
+            'email.email' => 'O email fornecido não é válido.',
+            'email.unique' => 'Já existe um usuário registrado com este email.',
+
+            'password.min' => 'A senha deve ter no mínimo 6 caracteres.',
         ];
     }
 }

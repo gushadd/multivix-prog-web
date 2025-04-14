@@ -29,24 +29,23 @@ class StoreUsuarioRequest extends FormRequest
         ];
     }
     public function messages()
-{
-    return [
-        'data_nascimento.required' => 'O campo data de nascimento é obrigatório.',
-        'data_nascimento.date' => 'A data de nascimento precisa ser uma data válida.',
-        'data_nascimento.before_or_equal' => 'Você precisa ter pelo menos 18 anos de idade.',
+    {
+        return [
+            'data_nascimento.required' => 'O campo data de nascimento é obrigatório.',
+            'data_nascimento.date' => 'A data de nascimento precisa ser uma data válida.',
+            'data_nascimento.before_or_equal' => 'Você precisa ter pelo menos 18 anos de idade.',
 
-        'nome.required' => 'O campo nome é obrigatório.',
-        'nome.string' => 'O nome precisa ser uma string.',
-        'nome.min' => 'O nome deve ter no mínimo 3 caracteres.',
-        'nome.max' => 'O nome pode ter no máximo 255 caracteres.',
+            'nome.required' => 'O campo nome é obrigatório.',
+            'nome.string' => 'O nome precisa ser uma string.',
+            'nome.min' => 'O nome deve ter no mínimo 3 caracteres.',
+            'nome.max' => 'O nome pode ter no máximo 255 caracteres.',
 
-        'email.required' => 'O campo email é obrigatório.',
-        'email.email' => 'O email fornecido não é válido.',
-        'email.unique' => 'Já existe um usuário registrado com este email.',
+            'email.required' => 'O campo email é obrigatório.',
+            'email.email' => 'O email fornecido não é válido.',
+            'email.unique' => 'Já existe um usuário registrado com este email.',
 
-        'password.required' => 'O campo senha é obrigatório.',
-        'password.min' => 'A senha deve ter no mínimo 6 caracteres.',
-    ];
-}
-
+            'password.required' => 'O campo senha é obrigatório.',
+            'password.min' => 'A senha deve ter no mínimo 6 caracteres.',
+        ];
+    }
 }

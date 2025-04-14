@@ -7,7 +7,7 @@ use App\Http\Requests\StoreUsuarioRequest;
 use App\Http\Requests\UpdateUsuarioRequest;
 
 class UsuarioController extends Controller
-{    
+{
     public function index()
     {
         $usuarios = Usuario::all();
@@ -59,27 +59,31 @@ class UsuarioController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUsuarioRequest $request, Usuario $usuario)
+
+    public function update(UpdateUsuarioRequest $request, $id)
     {
         $dadosValidados = $request->validated();
+        $usuario = Usuario::find($id);
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuário não encontrado.'
+            ], 404);
+        }
 
         // Atualiza a senha, se for enviada
         if (isset($dadosValidados['password'])) {
             $dadosValidados['password'] = bcrypt($dadosValidados['password']);
         }
-    
+
         $usuario->update($dadosValidados);
-    
+
         return response()->json([
             'message' => 'Usuário atualizado com sucesso!',
-            'usuario' => [
-                'id' => $usuario->id,
-                'nome' => $usuario->nome,
-                'email' => $usuario->email,
-                'data_nascimento' => $usuario->data_nascimento
-            ]
+            'usuario' => $usuario
         ]);
     }
+
+
     /**
      * Remove the specified resource from storage.
      */
@@ -92,12 +96,11 @@ class UsuarioController extends Controller
                 'message' => 'Usuário não encontrado.'
             ], 404);
         }
-    
+
         $usuario->delete();
-    
+
         return response()->json([
             'message' => 'Usuário removido com sucesso!'
         ]);
     }
-
 }
