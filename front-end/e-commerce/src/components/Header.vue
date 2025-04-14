@@ -1,11 +1,34 @@
 <script setup>
 import InputText from "primevue/inputtext";
+import DatePicker from "primevue/datepicker";
 import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import Tabs from "primevue/tabs";
+import TabList from "primevue/tablist";
+import Tab from "primevue/tab";
+import TabPanels from "primevue/tabpanels";
+import TabPanel from "primevue/tabpanel";
 
 import { ref } from "vue";
 
 const isLoggedIn = ref(false);
-const userName = ref("João");
+const headerUserName = ref("João");
+const dialogIsVisible = ref(false);
+
+// Variáveis de login
+const loginEmail = ref("");
+const loginPassword = ref("");
+
+// Variáveis de cadastro
+const signInUserName = ref("");
+const signInBirthDate = ref("");
+const signInEmail = ref("");
+const signInPassword = ref("");
+const signInConfirmPassword = ref("");
+
+const logIn = () => {};
+
+const signIn = () => {};
 </script>
 
 <template>
@@ -19,11 +42,39 @@ const userName = ref("João");
         </search>
         <div class="header-buttons">
             <Button class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" />
-            <Button v-if="!isLoggedIn" class="login-button" label="Login" icon="pi pi-sign-in" variant="link" />
-            <Button v-if="isLoggedIn" class="login-button" :label="userName" icon="pi pi-user" variant="link" />
+            <Button v-if="!isLoggedIn" class="login-button" label="Login" icon="pi pi-sign-in" variant="link" @click="dialogIsVisible = !dialogIsVisible" />
+            <Button v-if="isLoggedIn" class="login-button" :label="headerUserName" icon="pi pi-user" variant="link" />
             <Button class="side-menu-button" icon="pi pi-bars" variant="link" />
         </div>
     </header>
+
+    <Dialog v-model:visible="dialogIsVisible" header="Entrar" modal>
+        <Tabs value="0">
+            <TabsList>
+                <Tab value="0">Login</Tab>
+                <Tab value="1">Cadastro</Tab>
+            </TabsList>
+            <TabPanels>
+                <TabPanel value="0">
+                    <div class="flex flex-col justify-center gap-3 w-80 mt-5">
+                        <InputText placeholder="Email" v-model="loginEmail" />
+                        <InputText placeholder="Senha" v-model="loginPassword" />
+                        <Button class="mt-6" label="Entrar" @click="logIn" />
+                    </div>
+                </TabPanel>
+                <TabPanel value="1">
+                    <div class="flex flex-col justify-center gap-3 w-80 mt-5">
+                        <InputText placeholder="Nome de Usuário" v-model="signInUserName" />
+                        <DatePicker placeholder="Data de Nascimento" v-model="signInBirthDate" />
+                        <InputText placeholder="Email" v-model="signInEmail" />
+                        <InputText placeholder="Senha" v-model="signInPassword" />
+                        <InputText placeholder="Confirme a senha" v-model="signInConfirmPassword" />
+                        <Button class="mt-6" label="Cadastrar" @click="signIn" />
+                    </div>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
+    </Dialog>
 </template>
 
 <style scoped>
