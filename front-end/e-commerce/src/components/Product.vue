@@ -5,15 +5,15 @@ defineProps({
 </script>
 
 <template>
-    <div class="product">
+    <RouterLink :to="'/produto/' + product.id" class="product">
         <div class="image-wrapper">
-            <img src="../assets/images/product.jpg" alt="" />
+            <img :src="product.image" alt="" />
         </div>
         <div class="product-info">
             <h3>{{ product.name }}</h3>
             <p>{{ product.price }}</p>
         </div>
-    </div>
+    </RouterLink>
 </template>
 
 <style scoped>
@@ -41,17 +41,25 @@ defineProps({
 }
 
 .product-info {
-    padding: 10px;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    padding: 10px 15px;
+
+    border-top: 1px solid var(--surface-300);
 }
 
 .product-info h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .product-info p {
     margin-top: 5px;
-    font-size: 1rem;
-    color: var(--text-muted); /* Cor mais suave para o preço */
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-700);
 }
 </style>

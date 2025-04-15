@@ -1,16 +1,6 @@
 <script setup>
+import products from "@/assets/products.json";
 import Product from "../../components/Product.vue";
-
-const products = [
-    { id: 1, name: "Produto 1", price: "R$ 100,00" },
-    { id: 2, name: "Produto 2", price: "R$ 100,00" },
-    { id: 3, name: "Produto 3", price: "R$ 100,00" },
-    { id: 4, name: "Produto 4", price: "R$ 100,00" },
-    { id: 5, name: "Produto 5", price: "R$ 100,00" },
-    { id: 6, name: "Produto 6", price: "R$ 100,00" },
-    { id: 7, name: "Produto 7", price: "R$ 100,00" },
-    { id: 8, name: "Produto 8", price: "R$ 100,00" },
-];
 </script>
 
 <template>
@@ -30,21 +20,20 @@ main {
     align-items: center; /* Alinha os itens verticalmente */
 }
 
-
 @media (max-width: 1800px) {
-    main{
+    main {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 1300px) {
-    main{
+    main {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 900px) {
-    main{
+    main {
         grid-template-columns: repeat(1, 1fr);
     }
 }

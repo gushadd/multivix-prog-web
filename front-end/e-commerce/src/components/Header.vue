@@ -34,7 +34,7 @@ const signIn = () => {};
 <template>
     <header>
         <div class="logo-wrapper">
-            <img src="../assets/images/logo.png" alt="" />
+            <img src="/images/logo.png" alt="" />
         </div>
         <search class="search">
             <InputText class="search-input" placeholder="Pesquise" />
@@ -79,7 +79,7 @@ const signIn = () => {};
 
 <style scoped>
 header {
-    background-color: var(--surface-800);
+    background-color: var(--surface-900);
     display: flex;
     align-items: center;
     overflow: hidden;

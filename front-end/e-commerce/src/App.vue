@@ -14,9 +14,13 @@ import Button from "primevue/button";
 <template>
     <Header />
     <CategorySelector />
-    <main class="p-10">
+    <main>
         <RouterView />
     </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+main{
+    padding: 3vh 5vw;
+}
+</style>
