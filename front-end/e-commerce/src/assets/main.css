@@ -63,6 +63,11 @@ h6 {
     font-weight: 500;
 }
 
+img{
+    max-width: 100%;
+    display: block;
+}
+
 /* FIM DO CSS RESET */
 
 body {

@@ -28,6 +28,7 @@ defineProps({
     overflow: hidden;
     cursor: pointer;
     transition: all 0.13s;
+    justify-self: center;
 }
 
 .product:hover {
@@ -61,5 +62,11 @@ defineProps({
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--primary-700);
+}
+
+@media (max-width: 900px) {
+    .product{
+        width: 300px;
+    }
 }
 </style>

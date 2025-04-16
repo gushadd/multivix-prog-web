@@ -4,12 +4,14 @@ import DatePicker from "primevue/datepicker";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Tabs from "primevue/tabs";
-import TabList from "primevue/tablist";
 import Tab from "primevue/tab";
 import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
 
 import { ref } from "vue";
+import { RouterLink, useRouter } from "vue-router";
+
+const router = useRouter();
 
 const isLoggedIn = ref(false);
 const headerUserName = ref("João");
@@ -29,19 +31,23 @@ const signInConfirmPassword = ref("");
 const logIn = () => {};
 
 const signIn = () => {};
+
+const goToCart = () => {
+    router.push("/carrinho");
+};
 </script>
 
 <template>
     <header>
-        <div class="logo-wrapper">
+        <RouterLink to="/" class="logo-wrapper">
             <img src="/images/logo.png" alt="" />
-        </div>
+        </RouterLink>
         <search class="search">
             <InputText class="search-input" placeholder="Pesquise" />
             <Button icon="pi pi-search" variant="link" />
         </search>
         <div class="header-buttons">
-            <Button class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" />
+            <Button class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" />
             <Button v-if="!isLoggedIn" class="login-button" label="Login" icon="pi pi-sign-in" variant="link" @click="dialogIsVisible = !dialogIsVisible" />
             <Button v-if="isLoggedIn" class="login-button" :label="headerUserName" icon="pi pi-user" variant="link" />
             <Button class="side-menu-button" icon="pi pi-bars" variant="link" />
