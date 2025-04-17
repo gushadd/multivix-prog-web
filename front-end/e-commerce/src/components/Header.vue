@@ -7,6 +7,7 @@ import Tabs from "primevue/tabs";
 import Tab from "primevue/tab";
 import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
+import Popover from "primevue/popover";
 
 import { ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
@@ -35,6 +36,12 @@ const signIn = () => {};
 const goToCart = () => {
     router.push("/carrinho");
 };
+
+//Popover
+const op = ref();
+const toggle = (event) => {
+    op.value.toggle(event);
+};
 </script>
 
 <template>
@@ -50,9 +57,17 @@ const goToCart = () => {
             <Button class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" />
             <Button v-if="!isLoggedIn" class="login-button" label="Login" icon="pi pi-sign-in" variant="link" @click="dialogIsVisible = !dialogIsVisible" />
             <Button v-if="isLoggedIn" class="login-button" :label="headerUserName" icon="pi pi-user" variant="link" />
-            <Button class="side-menu-button" icon="pi pi-bars" variant="link" />
+            <Button class="side-menu-button" icon="pi pi-bars" variant="link" @click="toggle" />
         </div>
     </header>
+
+    <Popover ref="op">
+        <div class="flex flex-col items-start">
+            <Button label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" />
+            <Button v-if="!isLoggedIn" label="Login" icon="pi pi-sign-in" variant="link" @click="dialogIsVisible = !dialogIsVisible" />
+            <Button v-if="isLoggedIn" :label="headerUserName" icon="pi pi-user" variant="link" />
+        </div>
+    </Popover>
 
     <Dialog v-model:visible="dialogIsVisible" header="Entrar" modal>
         <Tabs value="0">

@@ -3,6 +3,14 @@ import Button from "primevue/button";
 import products from "@/assets/products.json";
 
 import CartProduct from "@/components/CartProduct.vue";
+
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const goToCheckout = () => {
+    router.push("/checkout");
+};
 </script>
 
 <template>
@@ -14,7 +22,7 @@ import CartProduct from "@/components/CartProduct.vue";
         <div class="cart-total">
             <h5>Total</h5>
             <h3>R$ 199,00</h3>
-            <Button label="Fechar pedido" />
+            <Button label="Fechar pedido" @click="goToCheckout" />
         </div>
     </main>
 </template>
