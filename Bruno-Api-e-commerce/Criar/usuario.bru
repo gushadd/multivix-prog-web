@@ -1,0 +1,21 @@
+meta {
+  name: usuario
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/api/usuarios
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nome": "admin",
+    "email": "admin@gmail.com",
+    "password": "@admin",
+    "data_nascimento": "2003-05-20"
+  }
+  
+}
