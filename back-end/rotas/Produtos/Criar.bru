@@ -1,0 +1,22 @@
+meta {
+  name: Criar
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:8000/api/produtos
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "Produto teste",
+    "descricao": "Uma descricao",
+    "valor": 13.13,
+    "categoria": "produto",
+    "foto": "https://images.tcdn.com.br/img/img_prod/275189/camisa_azul_royal_100_poliester_para_sublimacao_m_2701_1_20200722153204.jpg"
+  }
+  
+}
