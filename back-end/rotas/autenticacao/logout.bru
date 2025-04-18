@@ -1,12 +1,12 @@
 meta {
-  name: visualizar
+  name: logout
   type: http
-  seq: 1
+  seq: 3
 }
 
-get {
-  url: http://127.0.0.1:8000/api/produtos
-  body: none
+post {
+  url: http://127.0.0.1:8000/api/logout
+  body: json
   auth: bearer
 }
 
