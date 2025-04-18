@@ -2,85 +2,80 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
-use Laravel\Sanctum\HasApiTokens;
+use App\Models\user;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+
 
 class AuthController extends Controller
 {
-    // Método de registro (cadastrar usuário)
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $usuario = user::where('email', $request->email)->first();
+
+        if (!$usuario || !Hash::check($request->password, $usuario->password)) {
+            return response()->json(['message' => 'Credenciais inválidas'], 401);
+        }
+
+        $usuario->tokens()->delete();
+        $token = $usuario->createToken('token-login')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login bem-sucedido!',
+            'token' => $token,
+            'usuario' => $usuario
+        ]);
+    }
+
+    public function logout()
+    {
+        $user = Auth::user();
+        $token = $user->currentAccessToken();
+        $token->delete();
+
+        return response()->json([
+            'message' => 'Logout realizado com sucesso.'
+        ]);
+    }
+
+
+    // Função de registro
     public function register(Request $request)
     {
         // Validação dos dados recebidos
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+            'email' => 'required|email|unique:users,email|max:255',
+            'password' => 'required|string|min:8|confirmed', // A senha precisa ser confirmada
         ]);
+
         if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
         }
 
-        // Criação do usuário
+        // Criação do novo usuário
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password), // Criptografando a senha
         ]);
 
-        // Gerar o token
-        $token = $user->createToken('API Token')->plainTextToken;
+        // Autenticação do usuário após registro
+        Auth::login($user);
 
         return response()->json([
-            'message' => 'Usuário registrado com sucesso!',
+            'message' => 'Registro realizado com sucesso.',
             'user' => $user,
-            'token' => $token
         ], 201);
-    }
-
-    // Método de login (gerar token)
-    public function login(Request $request)
-    {
-        // Validação dos dados recebidos
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            throw ValidationException::withMessages($validator->errors()->toArray());
-        }
-
-        // Verifica se o usuário existe
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Credenciais inválidas.'], 401);
-        }
-
-        // Gerar o token
-        $token = $user->createToken('API Token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login bem-sucedido!',
-            'user' => $user,
-            'token' => $token
-        ]);
-    }
-
-    // Método de logout (revogar token)
-    public function logout(Request $request)
-    {
-        // Revoga o token do usuário atual
-        $user = Auth::user();
-        $user->tokens->each(function ($token) {
-            $token->delete();
-        });
-
-        return response()->json(['message' => 'Logout bem-sucedido!']);
     }
 }

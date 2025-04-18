@@ -6,12 +6,12 @@ use App\Http\Controllers\CarrinhoController;
 use App\Http\Controllers\AuthController;
 
 Route::apiResource('produtos', ProdutoController::class);
-
 // Rotas de produtos
 //Route::get('produtos', [ProdutoController::class, 'index']); // Acesso público
 //Route::get('produtos/{produto}', [ProdutoController::class, 'show']); // Acesso público
 
 Route::middleware('auth:sanctum')->group(function () {
+    //Route::get('produtos', [ProdutoController::class, 'index']);
     //Route::post('produtos', [ProdutoController::class, 'store']); // Acesso autenticado
     //Route::put('produtos/{produto}', [ProdutoController::class, 'update']); // Acesso autenticado
     //Route::delete('produtos/{produto}', [ProdutoController::class, 'destroy']); // Acesso autenticado
