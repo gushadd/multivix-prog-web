@@ -45,6 +45,8 @@ main {
 
 .img-wrapper {
     width: 30%;
+    max-height: 100%;
+    overflow: hidden;
 }
 
 img {

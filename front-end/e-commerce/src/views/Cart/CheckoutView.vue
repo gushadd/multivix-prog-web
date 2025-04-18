@@ -3,6 +3,7 @@ import { ref, reactive, onMounted } from "vue";
 import * as yup from "yup";
 
 import InputText from "primevue/inputtext";
+import InputMask from "primevue/inputmask";
 import Button from "primevue/button";
 import RadioButton from "primevue/radiobutton";
 import Select from "primevue/select";
@@ -96,11 +97,14 @@ onMounted(() => {
     cart.fetchCart();
 });
 
-const buscarCep = async () => {
-    if (!address.cep) return;
+const loading = ref(false);
 
+const buscarCep = async () => {
+    loading.value = true;
     try {
-        const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${address.cep}`);
+        await yup.string().required("CEP é obrigatório").min(9, "CEP deve ter no mínimo 8 caracteres").validate(address.cep);
+
+        const response = await fetch(`https://brasilapi.com.br/api/cep/v2/${address.cep}`);
         if (!response.ok) throw new Error("Erro ao buscar o CEP");
 
         const data = await response.json();
@@ -109,9 +113,16 @@ const buscarCep = async () => {
         address.bairro = data.neighborhood;
         address.cidade = data.city;
         address.estado = data.state;
+
+        errors.value.cep = "";
     } catch (error) {
-        toast.error("CEP inválido");
+        if (error.name === "ValidationError") {
+            errors.value.cep = error.message;
+        } else {
+            toast.error("CEP inválido");
+        }
     }
+    loading.value = false;
 };
 </script>
 
@@ -127,8 +138,8 @@ const buscarCep = async () => {
                 <h3>Endereço de Entrega</h3>
 
                 <div class="flex gap-2 items-center w-full mt-5">
-                    <InputText v-model="address.cep" placeholder="CEP" type="number" size="small" class="address-input w-3/5" />
-                    <Button icon="pi pi-search" @click="buscarCep" severity="secondary" variant="text" />
+                    <InputMask v-model="address.cep" placeholder="CEP" mask="99999-999" size="small" class="address-input w-3/5" />
+                    <Button icon="pi pi-search" @click="buscarCep" severity="secondary" variant="text" :loading="loading" />
                 </div>
                 <small v-if="errors.cep" class="text-red-500">{{ errors.cep }}</small>
 

@@ -7,7 +7,6 @@ import HomeView from "@/views/Products/HomeView.vue";
 import ProductDetailsView from "@/views/Products/ProductDetailsView.vue";
 import CartView from "@/views/Cart/CartView.vue";
 import CheckoutView from "@/views/Cart/CheckoutView.vue";
-import ThankYouView from "@/views/ThankYouView.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,7 +15,6 @@ const router = createRouter({
         { path: "/produto/:id", name: "ProductDetailsView", component: ProductDetailsView },
         { path: "/carrinho", name: "CartView", component: CartView, meta: { requiresAuth: true } },
         { path: "/checkout", name: "CheckoutView", component: CheckoutView, meta: { requiresAuth: true } },
-        { path: "/obrigado", name: "ThankYouView", component: ThankYouView, meta: { requiresAuth: true } },
     ],
 });
 

@@ -196,7 +196,7 @@ const toggleLogout = (event) => {
                         <InputText placeholder="Email" v-model="loginEmail" />
                         <small v-if="loginErrors.email" class="text-red-500">{{ loginErrors.email }}</small>
 
-                        <InputText placeholder="Senha" v-model="loginPassword" />
+                        <InputText placeholder="Senha" v-model="loginPassword" type="password" />
                         <small v-if="loginErrors.password" class="text-red-500">{{ loginErrors.password }}</small>
 
                         <Button class="mt-6" label="Entrar" @click="logIn" />
@@ -210,10 +210,10 @@ const toggleLogout = (event) => {
                         <InputText placeholder="Email" v-model="signInEmail" />
                         <small v-if="registerErrors.email" class="text-red-500">{{ registerErrors.email }}</small>
 
-                        <InputText placeholder="Senha" v-model="signInPassword" />
+                        <InputText placeholder="Senha" v-model="signInPassword" type="password" />
                         <small v-if="registerErrors.password" class="text-red-500">{{ registerErrors.password }}</small>
 
-                        <InputText placeholder="Confirme a senha" v-model="signInConfirmPassword" />
+                        <InputText placeholder="Confirme a senha" v-model="signInConfirmPassword" type="password" />
                         <small v-if="registerErrors.confirmPassword" class="text-red-500">{{ registerErrors.confirmPassword }}</small>
                         <Button class="mt-6" label="Cadastrar" @click="signIn" />
                     </div>

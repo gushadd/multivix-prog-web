@@ -7,6 +7,8 @@ const api = axios.create({
     },
 });
 
+// `http://127.0.0.1:8000/api`
+
 // Interceptador para adicionar token automaticamente
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
