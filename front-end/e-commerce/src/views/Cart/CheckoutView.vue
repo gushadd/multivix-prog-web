@@ -1,16 +1,29 @@
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
+import * as yup from "yup";
+
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import RadioButton from "primevue/radiobutton";
 import Select from "primevue/select";
 
-import products from "@/assets/products.json";
-
 import CheckoutProduct from "@/components/CheckoutProduct.vue";
+import { useCartStore } from "@/stores/cart";
+
+const cart = useCartStore();
+
+const address = reactive({
+    cep: "",
+    rua: "",
+    numero: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+});
 
 const paymentMethod = ref("");
 const paymentMethodIsCreditCard = ref(false);
+const selectedInstallments = ref(null);
 const installments = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
 const checkCreditCard = () => {
@@ -19,6 +32,47 @@ const checkCreditCard = () => {
 
 const checkOtherPayment = () => {
     paymentMethodIsCreditCard.value = false;
+    selectedInstallments.value = null;
+};
+
+// Schema de validação com yup
+const schema = yup.object({
+    cep: yup.string().required("CEP é obrigatório"),
+    rua: yup.string().required("Rua é obrigatória"),
+    numero: yup.number().typeError("Número deve ser numérico").required("Número é obrigatório"),
+    bairro: yup.string().required("Bairro é obrigatório"),
+    cidade: yup.string().required("Cidade é obrigatória"),
+    estado: yup.string().required("Estado é obrigatório"),
+    paymentMethod: yup.string().required("Forma de pagamento é obrigatória"),
+    installments: yup
+        .number()
+        .nullable()
+        .when("paymentMethod", {
+            is: "cartao",
+            then: (schema) => schema.required("Selecione o número de parcelas"),
+        }),
+});
+
+const errors = ref({});
+
+const validate = async () => {
+    try {
+        errors.value = {};
+        await schema.validate(
+            {
+                ...address,
+                paymentMethod: paymentMethod.value,
+                installments: selectedInstallments.value,
+            },
+            { abortEarly: false }
+        );
+    } catch (err) {
+        if (err.inner) {
+            err.inner.forEach((e) => {
+                errors.value[e.path] = e.message;
+            });
+        }
+    }
 };
 </script>
 
@@ -26,43 +80,68 @@ const checkOtherPayment = () => {
     <main class="main-wrapper">
         <h2>Fechar Pedido</h2>
         <div class="products-wrapper">
-            <CheckoutProduct v-for="product in products" :key="product.id" :product="product" />
+            <CheckoutProduct v-for="product in cart.cart" :key="product.id" :product="product" />
         </div>
+
         <div class="checkout-info-wrapper">
             <div class="address-form-wrapper">
                 <h3>Endereço de Entrega</h3>
-                <InputText placeholder="CEP" size="small" class="address-input w-3/5 mt-5" />
-                <InputText placeholder="Rua" size="small" class="address-input w-3/5" />
-                <InputText placeholder="Número" type="number" size="small" class="address-input w-3/5" />
-                <InputText placeholder="Bairro" size="small" class="address-input w-3/5" />
-                <InputText placeholder="Cidade" size="small" class="address-input w-3/5" />
-                <InputText placeholder="Estado" size="small" class="address-input w-3/5" />
+                <InputText v-model="address.cep" placeholder="CEP" size="small" class="address-input w-3/5 mt-5" />
+                <small v-if="errors.cep" class="text-red-500">{{ errors.cep }}</small>
+
+                <InputText v-model="address.rua" placeholder="Rua" size="small" class="address-input w-3/5" />
+                <small v-if="errors.rua" class="text-red-500">{{ errors.rua }}</small>
+
+                <InputText v-model="address.numero" placeholder="Número" type="number" size="small" class="address-input w-3/5" />
+                <small v-if="errors.numero" class="text-red-500">{{ errors.numero }}</small>
+
+                <InputText v-model="address.bairro" placeholder="Bairro" size="small" class="address-input w-3/5" />
+                <small v-if="errors.bairro" class="text-red-500">{{ errors.bairro }}</small>
+
+                <InputText v-model="address.cidade" placeholder="Cidade" size="small" class="address-input w-3/5" />
+                <small v-if="errors.cidade" class="text-red-500">{{ errors.cidade }}</small>
+
+                <InputText v-model="address.estado" placeholder="Estado" size="small" class="address-input w-3/5" />
+                <small v-if="errors.estado" class="text-red-500">{{ errors.estado }}</small>
+
                 <Button label="Salvar" class="address-save-button w-3/5 mt-5" />
             </div>
+
             <div class="payment-wrapper">
-                <div>
-                    <h3>Forma de Pagamento</h3>
-                    <div class="flex gap-2 items-center mt-5">
-                        <RadioButton v-model="paymentMethod" inputId="payment1" name="payment" value="pix" @change="checkOtherPayment" />
-                        <label for="payment1">Pix</label>
-                    </div>
-                    <div class="flex gap-2 items-center mt-5">
-                        <RadioButton v-model="paymentMethod" inputId="payment2" name="payment" value="boleto" @change="checkOtherPayment" />
-                        <label for="payment2">Boleto</label>
-                    </div>
-                    <div class="flex gap-2 items-center mt-5">
-                        <RadioButton v-model="paymentMethod" inputId="payment3" name="payment" value="cartao" @change="checkCreditCard" />
-                        <label for="payment3">Cartão de Crédito</label>
-                    </div>
-                    <div v-if="paymentMethodIsCreditCard" class="flex gap-2 items-center mt-5">
-                        <Select size="small" placeholder="Selecione as parcelas" :options="installments" />
-                    </div>
-                    <div class="mt-10 w-full flex flex-col items-start"></div>
+                <h3>Forma de Pagamento</h3>
+
+                <div class="flex gap-2 items-center mt-5">
+                    <RadioButton v-model="paymentMethod" inputId="payment1" name="payment" value="pix" @change="checkOtherPayment" />
+                    <label for="payment1">Pix</label>
                 </div>
+
+                <div class="flex gap-2 items-center mt-5">
+                    <RadioButton v-model="paymentMethod" inputId="payment2" name="payment" value="boleto" @change="checkOtherPayment" />
+                    <label for="payment2">Boleto</label>
+                </div>
+
+                <div class="flex gap-2 items-center mt-5">
+                    <RadioButton v-model="paymentMethod" inputId="payment3" name="payment" value="cartao" @change="checkCreditCard" />
+                    <label for="payment3">Cartão de Crédito</label>
+                </div>
+                <small v-if="errors.paymentMethod" class="text-red-500">
+                    {{ errors.paymentMethod }}
+                </small>
+
+                <div v-if="paymentMethodIsCreditCard" class="flex gap-2 items-center mt-5">
+                    <Select v-model="selectedInstallments" :options="installments" size="small" placeholder="Selecione as parcelas" />
+                    <small v-if="errors.installments" class="text-red-500">
+                        {{ errors.installments }}
+                    </small>
+                </div>
+
+                <div class="mt-10 w-full flex flex-col items-start"></div>
+
                 <div>
-                    <h3>Total: <span>R$ 199,99</span></h3>
-                    <h5>Forma de Pagamento: Pix</h5>
-                    <Button label="Confirmar Pedido" class="confirm-button w-3/5 mt-5" />
+                    <h3>
+                        Total: <span>R$ {{ cart.totalPrice }}</span>
+                    </h3>
+                    <Button label="Confirmar Pedido" class="confirm-button w-3/5 mt-5" @click="validate" />
                 </div>
             </div>
         </div>
@@ -81,7 +160,7 @@ const checkOtherPayment = () => {
     flex-direction: column;
     gap: 10px;
     width: 100%;
-    min-height: 600px;
+    min-height: fit-content;
     max-height: 600px;
     overflow-y: scroll;
 }
@@ -89,6 +168,7 @@ const checkOtherPayment = () => {
 .checkout-info-wrapper {
     display: flex;
     gap: 20px;
+    min-height: fit-content;
     height: 500px;
     margin-top: 20px;
 }

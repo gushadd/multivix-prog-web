@@ -9,13 +9,19 @@ import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
 import Popover from "primevue/popover";
 
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+import { useAuthStore } from "@/stores/auth";
+import { useCartStore } from "@/stores/cart";
 
+const cart = useCartStore();
+const toast = useToast();
 const router = useRouter();
+const auth = useAuthStore();
 
 const isLoggedIn = ref(false);
-const headerUserName = ref("João");
+const headerUserName = ref("");
 const dialogIsVisible = ref(false);
 
 // Variáveis de login
@@ -29,18 +35,54 @@ const signInEmail = ref("");
 const signInPassword = ref("");
 const signInConfirmPassword = ref("");
 
-const logIn = () => {};
+// Checar se o usuário já está logado ao carregar a página
+onMounted(() => {
+    if (auth.isAuthenticated) {
+        headerUserName.value = auth.user.name;
+        isLoggedIn.value = true;
+    }
+});
 
-const signIn = () => {};
+const logIn = () => {
+    const ok = auth.login({ email: loginEmail.value, password: loginPassword.value });
+
+    if (ok) {
+        dialogIsVisible.value = false;
+        headerUserName.value = auth.user.name;
+        isLoggedIn.value = true;
+        toast.success("Login realizado com sucesso.");
+    } else {
+        toast.error("Erro ao fazer login.");
+    }
+};
+
+const signIn = () => {
+    // Lógica de cadastro (deve ser implementada)
+};
+
+const logout = () => {
+    auth.logout();
+    isLoggedIn.value = false;
+    headerUserName.value = "";
+    logoutOp.value.hide(); // esconde o popover
+    toast.success("Logout realizado com sucesso.");
+    router.push("/"); // volta para a home
+};
 
 const goToCart = () => {
     router.push("/carrinho");
 };
 
-//Popover
+// Popover menu hamburguer
 const op = ref();
-const toggle = (event) => {
+const toggleMenu = (event) => {
     op.value.toggle(event);
+};
+
+// Popover logout
+const logoutOp = ref();
+const toggleLogout = (event) => {
+    logoutOp.value.toggle(event);
 };
 </script>
 
@@ -54,10 +96,10 @@ const toggle = (event) => {
             <Button icon="pi pi-search" variant="link" />
         </search>
         <div class="header-buttons">
-            <Button class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" />
+            <Button v-if="isLoggedIn" class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" :badge="cart.totalItems" />
             <Button v-if="!isLoggedIn" class="login-button" label="Login" icon="pi pi-sign-in" variant="link" @click="dialogIsVisible = !dialogIsVisible" />
-            <Button v-if="isLoggedIn" class="login-button" :label="headerUserName" icon="pi pi-user" variant="link" />
-            <Button class="side-menu-button" icon="pi pi-bars" variant="link" @click="toggle" />
+            <Button v-if="isLoggedIn" class="login-button" :label="headerUserName" icon="pi pi-user" variant="link" @click="toggleLogout" />
+            <Button class="side-menu-button" icon="pi pi-bars" variant="link" @click="toggleMenu" />
         </div>
     </header>
 
@@ -66,6 +108,12 @@ const toggle = (event) => {
             <Button label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" />
             <Button v-if="!isLoggedIn" label="Login" icon="pi pi-sign-in" variant="link" @click="dialogIsVisible = !dialogIsVisible" />
             <Button v-if="isLoggedIn" :label="headerUserName" icon="pi pi-user" variant="link" />
+        </div>
+    </Popover>
+
+    <Popover ref="logoutOp">
+        <div class="flex flex-col items-start">
+            <Button label="Logout" icon="pi pi-sign-out" variant="link" @click="logout" />
         </div>
     </Popover>
 

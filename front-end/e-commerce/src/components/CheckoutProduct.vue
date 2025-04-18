@@ -1,7 +1,20 @@
 <script setup>
+import { useCartStore } from "@/stores/cart";
+
+const cart = useCartStore();
+
 defineProps({
     product: Object,
 });
+
+const calculateTotal = (priceString, quantity) => {
+    const numericPrice = parseFloat(priceString.replace(/[^\d,]/g, "").replace(",", "."));
+    const total = numericPrice * quantity;
+    return total.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    });
+};
 </script>
 
 <template>
@@ -11,8 +24,8 @@ defineProps({
         </div>
         <div class="info">
             <h4>{{ product.name }}</h4>
-            <h6>Quantidade: 5</h6>
-            <h3>{{ product.price }}</h3>
+            <h6>Quantidade: {{ product.quantity }}</h6>
+            <h3>{{ calculateTotal(product.price, product.quantity) }}</h3>
         </div>
     </div>
 </template>

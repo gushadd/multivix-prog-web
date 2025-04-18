@@ -1,14 +1,23 @@
 <script setup>
-import { ref } from "vue";
-
-import InputNumber from "primevue/inputnumber";
+import { ref, watch } from "vue";
+import InputNumber from "primevue/inputnumber"; // (caso use InputNumber em outro lugar)
 import Select from "primevue/select";
 
-defineProps({
+import { useCartStore } from "@/stores/cart";
+const cart = useCartStore();
+
+const props = defineProps({
     product: Object,
 });
 
-const quantityOptions = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+const calculateTotal = (priceString, quantity) => {
+    const numericPrice = parseFloat(priceString.replace(/[^\d,]/g, "").replace(",", "."));
+    const total = numericPrice * quantity;
+    return total.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    });
+};
 </script>
 
 <template>
@@ -19,11 +28,10 @@ const quantityOptions = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         <div class="product-info">
             <h4>{{ product.name }}</h4>
             <div class="quantity-selector">
-                <p>Quantidade</p>
-                <Select :options="quantityOptions" size="small"></Select>
+                <p>Quantidade: {{ product.quantity }}</p>
             </div>
             <h5>Total</h5>
-            <h3>R$ 199,99</h3>
+            <h3>{{ calculateTotal(product.price, product.quantity) }}</h3>
         </div>
     </main>
 </template>

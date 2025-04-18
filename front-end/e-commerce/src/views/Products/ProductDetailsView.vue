@@ -3,14 +3,40 @@ import Select from "primevue/select";
 import Button from "primevue/button";
 import OtherProducts from "@/components/OtherProducts.vue";
 
+import { useCartStore } from "@/stores/cart";
+import { useAuthStore } from "@/stores/auth";
+
 import products from "@/assets/products.json";
 import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { useToast } from "vue-toastification";
 
+const toast = useToast();
 const route = useRoute();
+const cart = useCartStore();
+const auth = useAuthStore();
+
 const productId = parseInt(route.params.id);
 const product = ref(null);
+const productQuantity = ref(1);
 const productQuantities = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+const handleAddToCart = () => {
+    if (auth.isAuthenticated) {
+        cart.addToCart(product.value, productQuantity.value);
+        toast.success("Produto adicionado ao carrinho!");
+    } else {
+        toast.error("Por favor, faça login antes de adicionar ao carrinho.");
+    }
+};
+
+const handleBuyNow = () => {
+    if (auth.isAuthenticated) {
+        toast.success("Compre agora!");
+    } else {
+        toast.error("Por favor, faça login antes de comprar.");
+    }
+};
 
 const loadProduct = (id) => {
     const numericId = parseInt(id);
@@ -44,9 +70,9 @@ watch(
             </div>
             <div class="buy-options">
                 <h2>{{ product.price }}</h2>
-                <Select placeholder="Quantidade" :options="productQuantities" size="small" class="w-50 my-5" />
-                <Button label="Comprar Agora" class="w-50" />
-                <Button label="Adicionar ao Carrinho" class="w-50" variant="outlined" />
+                <Select placeholder="Quantidade" :options="productQuantities" size="small" class="w-50 my-5" v-model="productQuantity" />
+                <Button label="Comprar Agora" class="w-50" @click="handleBuyNow" />
+                <Button label="Adicionar ao Carrinho" class="w-50" variant="outlined" @click="handleAddToCart" />
             </div>
         </div>
         <h3>Outros Produtos</h3>
@@ -121,7 +147,7 @@ main {
 }
 
 @media (max-width: 1500px) {
-    .product-detail{
+    .product-detail {
         height: 500px;
     }
 
@@ -149,19 +175,19 @@ main {
 }
 
 @media (max-width: 900px) {
-    .product-detail{
+    .product-detail {
         flex-direction: column;
         height: 700px;
         gap: 30px;
     }
 
-    .buy-options{
+    .buy-options {
         align-items: start;
     }
 }
 
 @media (max-width: 900px) {
-    .product-detail{
+    .product-detail {
         height: 800px;
         margin-bottom: 80px;
     }
