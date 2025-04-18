@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Carrinho;
+namespace App\Http\Requests\Carrinhos;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -11,7 +11,7 @@ class StoreCarrinhoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**

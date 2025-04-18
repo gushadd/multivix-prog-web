@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Carrinho;
-use App\Http\Requests\Carrinho\StoreCarrinhoRequest;
-use App\Models\User;
+use App\Http\Requests\Carrinhos\StoreCarrinhoRequest;
 use Illuminate\Support\Facades\Auth;
 
 class CarrinhoController extends Controller
