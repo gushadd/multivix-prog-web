@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import * as yup from "yup";
 
 import InputText from "primevue/inputtext";
@@ -9,7 +9,11 @@ import Select from "primevue/select";
 
 import CheckoutProduct from "@/components/CheckoutProduct.vue";
 import { useCartStore } from "@/stores/cart";
+import { useToast } from "vue-toastification";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
+const toast = useToast();
 const cart = useCartStore();
 
 const address = reactive({
@@ -66,6 +70,19 @@ const validate = async () => {
             },
             { abortEarly: false }
         );
+
+        // Mostrar o toast de agradecimento
+        toast.success("Obrigado pela sua compra!", {
+            timeout: 5000,
+        });
+
+        // Limpar carrinho
+        cart.clear();
+
+        // Redirecionar para a tela inicial após um pequeno delay
+        setTimeout(() => {
+            router.push("/");
+        }, 500);
     } catch (err) {
         if (err.inner) {
             err.inner.forEach((e) => {
@@ -74,19 +91,45 @@ const validate = async () => {
         }
     }
 };
+
+onMounted(() => {
+    cart.fetchCart();
+});
+
+const buscarCep = async () => {
+    if (!address.cep) return;
+
+    try {
+        const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${address.cep}`);
+        if (!response.ok) throw new Error("Erro ao buscar o CEP");
+
+        const data = await response.json();
+
+        address.rua = data.street;
+        address.bairro = data.neighborhood;
+        address.cidade = data.city;
+        address.estado = data.state;
+    } catch (error) {
+        toast.error("CEP inválido");
+    }
+};
 </script>
 
 <template>
     <main class="main-wrapper">
         <h2>Fechar Pedido</h2>
         <div class="products-wrapper">
-            <CheckoutProduct v-for="product in cart.cart" :key="product.id" :product="product" />
+            <CheckoutProduct v-for="product in cart.groupedItems" :key="product.produto.id" :product="product" />
         </div>
 
         <div class="checkout-info-wrapper">
             <div class="address-form-wrapper">
                 <h3>Endereço de Entrega</h3>
-                <InputText v-model="address.cep" placeholder="CEP" size="small" class="address-input w-3/5 mt-5" />
+
+                <div class="flex gap-2 items-center w-full mt-5">
+                    <InputText v-model="address.cep" placeholder="CEP" type="number" size="small" class="address-input w-3/5" />
+                    <Button icon="pi pi-search" @click="buscarCep" severity="secondary" variant="text" />
+                </div>
                 <small v-if="errors.cep" class="text-red-500">{{ errors.cep }}</small>
 
                 <InputText v-model="address.rua" placeholder="Rua" size="small" class="address-input w-3/5" />
@@ -103,8 +146,6 @@ const validate = async () => {
 
                 <InputText v-model="address.estado" placeholder="Estado" size="small" class="address-input w-3/5" />
                 <small v-if="errors.estado" class="text-red-500">{{ errors.estado }}</small>
-
-                <Button label="Salvar" class="address-save-button w-3/5 mt-5" />
             </div>
 
             <div class="payment-wrapper">
@@ -139,7 +180,15 @@ const validate = async () => {
 
                 <div>
                     <h3>
-                        Total: <span>R$ {{ cart.totalPrice }}</span>
+                        Total:
+                        <span>
+                            {{
+                                cart.totalPrice.toLocaleString("pt-BR", {
+                                    style: "currency",
+                                    currency: "BRL",
+                                })
+                            }}
+                        </span>
                     </h3>
                     <Button label="Confirmar Pedido" class="confirm-button w-3/5 mt-5" @click="validate" />
                 </div>
@@ -207,7 +256,7 @@ const validate = async () => {
     }
 
     .payment-wrapper {
-        flex-direction: row;
+        flex-direction: column;
         gap: 20px;
         width: 100%;
         justify-content: center;

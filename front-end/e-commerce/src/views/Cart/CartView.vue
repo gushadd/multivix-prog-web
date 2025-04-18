@@ -1,13 +1,17 @@
 <script setup>
 import Button from "primevue/button";
-
 import CartProduct from "@/components/CartProduct.vue";
 
 import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
+import { onMounted } from "vue";
 
 const cart = useCartStore();
 const router = useRouter();
+
+onMounted(() => {
+    cart.fetchCart();
+});
 
 const goToCheckout = () => {
     router.push("/checkout");
@@ -16,14 +20,14 @@ const goToCheckout = () => {
 
 <template>
     <main class="main-wrapper">
-        <h2 v-if="!cart.cart">Carrinho vazio</h2>
-        <div v-if="cart.cart" class="cart-details">
+        <h2 v-if="cart.items.length === 0">Carrinho vazio</h2>
+        <div v-else class="cart-details">
             <h2>Meu Carrinho</h2>
-            <CartProduct v-for="product in cart.cart" :key="product.id" :product="product" />
+            <CartProduct v-for="product in cart.groupedItems" :key="product.produto.id" :product="product" />
         </div>
-        <div v-if="cart.cart" class="cart-total">
+        <div v-if="cart.items.length > 0" class="cart-total">
             <h5>Total</h5>
-            <h3>R$ {{ cart.totalPrice }}</h3>
+            <h3>R$ {{ cart.totalPrice.toFixed(2) }}</h3>
             <Button label="Fechar pedido" @click="goToCheckout" />
         </div>
     </main>

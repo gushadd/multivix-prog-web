@@ -6,25 +6,31 @@ import OtherProducts from "@/components/OtherProducts.vue";
 import { useCartStore } from "@/stores/cart";
 import { useAuthStore } from "@/stores/auth";
 
-import products from "@/assets/products.json";
 import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
+
+import { getProduct } from "@/services/productService";
 
 const toast = useToast();
 const route = useRoute();
 const cart = useCartStore();
 const auth = useAuthStore();
 
-const productId = parseInt(route.params.id);
 const product = ref(null);
 const productQuantity = ref(1);
 const productQuantities = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
-const handleAddToCart = () => {
+const handleAddToCart = async () => {
     if (auth.isAuthenticated) {
-        cart.addToCart(product.value, productQuantity.value);
-        toast.success("Produto adicionado ao carrinho!");
+        try {
+            for (let i = 0; i < productQuantity.value; i++) {
+                await cart.add(product.value.id);
+            }
+            toast.success("Produto adicionado ao carrinho!");
+        } catch (error) {
+            toast.error("Erro ao adicionar ao carrinho.");
+        }
     } else {
         toast.error("Por favor, faça login antes de adicionar ao carrinho.");
     }
@@ -38,9 +44,14 @@ const handleBuyNow = () => {
     }
 };
 
-const loadProduct = (id) => {
+const loadProduct = async (id) => {
     const numericId = parseInt(id);
-    product.value = products.find((p) => p.id === numericId);
+    try {
+        const data = await getProduct(numericId);
+        product.value = data;
+    } catch (err) {
+        toast.error("Erro ao carregar os produtos.");
+    }
 };
 
 onMounted(() => {
@@ -61,18 +72,25 @@ watch(
         <div v-if="product" class="product-detail">
             <div class="product-info">
                 <div class="img-wrapper">
-                    <img :src="product.image" alt="" />
+                    <img :src="product.foto" alt="" />
                 </div>
                 <div class="info">
-                    <h2>{{ product.name }}</h2>
-                    <p>{{ product.description }}</p>
+                    <h2>{{ product.nome }}</h2>
+                    <p>{{ product.descricao }}</p>
                 </div>
             </div>
             <div class="buy-options">
-                <h2>{{ product.price }}</h2>
-                <Select placeholder="Quantidade" :options="productQuantities" size="small" class="w-50 my-5" v-model="productQuantity" />
-                <Button label="Comprar Agora" class="w-50" @click="handleBuyNow" />
-                <Button label="Adicionar ao Carrinho" class="w-50" variant="outlined" @click="handleAddToCart" />
+                <h2>
+                    {{
+                        product.valor.toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                        })
+                    }}
+                </h2>
+                <p class="opacity-60">Quantidade</p>
+                <Select placeholder="Quantidade" :options="productQuantities" size="small" class="w-50 mb-5" v-model="productQuantity" />
+                <Button label="Adicionar ao Carrinho" class="w-50" @click="handleAddToCart" />
             </div>
         </div>
         <h3>Outros Produtos</h3>

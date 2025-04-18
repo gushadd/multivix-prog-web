@@ -1,87 +1,73 @@
+// src/stores/cart.js
 import { defineStore } from "pinia";
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
+import { getCart, addToCart, removeFromCart } from "@/services/cartService";
 
 export const useCartStore = defineStore("cart", () => {
-    // Recuperar o carrinho salvo no localStorage (se houver)
-    const cart = ref(JSON.parse(localStorage.getItem("cart")) || []);
+    const items = ref([]);
 
-    // Salvar o carrinho no localStorage sempre que ele for alterado
-    watch(
-        cart,
-        (newCart) => {
-            localStorage.setItem("cart", JSON.stringify(newCart));
-        },
-        { deep: true }
-    );
-
-    // Função para adicionar um item ao carrinho
-    const addToCart = (product, quantity = 1) => {
-        const existing = cart.value.find((p) => p.id === product.id);
-        if (existing) {
-            existing.quantity += quantity;
-        } else {
-            cart.value.push({ ...product, quantity });
+    const fetchCart = async () => {
+        try {
+            const response = await getCart();
+            items.value = response.data;
+        } catch (error) {
+            console.error("Erro ao buscar carrinho:", error);
         }
     };
 
-    // Função para atualizar a quantidade de um item no carrinho
-    const updateQuantity = (productId, newQuantity) => {
-        const item = cart.value.find((p) => p.id === productId);
-        if (item) {
-            item.quantity = newQuantity;
+    const add = async (produtoId) => {
+        try {
+            await addToCart(produtoId);
+            await fetchCart();
+        } catch (error) {
+            console.error("Erro ao adicionar ao carrinho:", error);
         }
     };
 
-    // Função para remover um item do carrinho
-    const removeFromCart = (id) => {
-        cart.value = cart.value.filter((p) => p.id !== id);
-    };
-
-    // Função para aumentar a quantidade de um item no carrinho
-    const increaseQuantity = (id) => {
-        const item = cart.value.find((p) => p.id === id);
-        if (item) item.quantity++;
-    };
-
-    // Função para diminuir a quantidade de um item no carrinho
-    const decreaseQuantity = (id) => {
-        const item = cart.value.find((p) => p.id === id);
-        if (item && item.quantity > 1) {
-            item.quantity--;
-        } else {
-            removeFromCart(id);
+    const remove = async (id) => {
+        try {
+            await removeFromCart(id);
+            await fetchCart();
+        } catch (error) {
+            console.error("Erro ao remover do carrinho:", error);
         }
     };
 
-    // Função para limpar o carrinho
-    const clearCart = () => {
-        cart.value = [];
+    const clear = async () => {
+        items.value.forEach((item) => {
+            console.log(item);
+            remove(item.id);
+        });
+        items.value = [];
     };
 
-    // Computar o total de itens no carrinho
-    const totalItems = computed(() => {
-        return cart.value.reduce((sum, p) => sum + p.quantity, 0);
+    const groupedItems = computed(() => {
+        const map = new Map();
+
+        for (const item of items.value) {
+            const produtoId = item.produto.id;
+            if (!map.has(produtoId)) {
+                map.set(produtoId, { ...item, quantidade: 1 });
+            } else {
+                map.get(produtoId).quantidade += 1;
+            }
+        }
+
+        return Array.from(map.values());
     });
 
-    // Computar o preço total do carrinho
-    const totalPrice = computed(() => {
-        return cart.value
-            .reduce((sum, p) => {
-                const numericPrice = parseFloat(p.price.replace(/[^\d,]/g, "").replace(",", "."));
-                return sum + numericPrice * p.quantity;
-            }, 0)
-            .toFixed(2);
-    });
+    const totalPrice = computed(() => items.value.reduce((total, item) => total + item.produto.valor, 0));
+
+    const totalItems = computed(() => items.value.length);
 
     return {
-        cart,
-        addToCart,
-        removeFromCart,
-        increaseQuantity,
-        decreaseQuantity,
-        clearCart,
+        items,
         totalItems,
+        groupedItems,
         totalPrice,
-        updateQuantity,
+        fetchCart,
+        add,
+        remove,
+        clear,
     };
 });

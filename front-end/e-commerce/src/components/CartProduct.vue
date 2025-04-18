@@ -9,29 +9,27 @@ const cart = useCartStore();
 const props = defineProps({
     product: Object,
 });
-
-const calculateTotal = (priceString, quantity) => {
-    const numericPrice = parseFloat(priceString.replace(/[^\d,]/g, "").replace(",", "."));
-    const total = numericPrice * quantity;
-    return total.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-    });
-};
 </script>
 
 <template>
     <main>
         <div class="img-wrapper">
-            <img :src="product.image" alt="" />
+            <img :src="product.produto.foto" alt="" />
         </div>
         <div class="product-info">
-            <h4>{{ product.name }}</h4>
+            <h4>{{ product.produto.nome }}</h4>
             <div class="quantity-selector">
-                <p>Quantidade: {{ product.quantity }}</p>
+                <p>Quantidade: {{ product.quantidade }}</p>
             </div>
             <h5>Total</h5>
-            <h3>{{ calculateTotal(product.price, product.quantity) }}</h3>
+            <h3>
+                {{
+                    (product.produto.valor * product.quantidade).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                    })
+                }}
+            </h3>
         </div>
     </main>
 </template>

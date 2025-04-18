@@ -1,6 +1,24 @@
 <script setup>
-import products from "@/assets/products.json";
+import { onMounted, ref } from "vue";
+
 import Product from "../../components/Product.vue";
+import { getProducts } from "@/services/productService";
+
+const products = ref([]);
+
+// Função para carregar os produtos
+const loadProducts = async () => {
+    try {
+        const data = await getProducts();
+        products.value = data;
+    } catch (err) {
+        toast.error("Erro ao carregar os produtos.");
+    }
+};
+
+onMounted(() => {
+    loadProducts(); // Carregar produtos ao montar o componente
+});
 </script>
 
 <template>

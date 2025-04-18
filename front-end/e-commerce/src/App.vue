@@ -13,7 +13,6 @@ import Button from "primevue/button";
 
 <template>
     <Header />
-    <CategorySelector />
     <main>
         <RouterView />
     </main>

@@ -1,52 +1,83 @@
 import { defineStore } from "pinia";
-import { ref, computed, onMounted } from "vue";
+import { ref } from "vue";
+import { login as loginApi } from "@/services/authService";
+import { logout as logoutApi } from "@/services/authService";
+import { register as registerApi } from "@/services/authService";
+import { useCartStore } from "@/stores/cart";
+import api from "@/services/api";
 
 export const useAuthStore = defineStore("auth", () => {
-    // Inicializa a variável `user` com o valor do `localStorage` se houver
-    const user = ref(null);
+    const user = ref(JSON.parse(localStorage.getItem("user")) || null); // Corrigido: era "usuario"
+    const token = ref(localStorage.getItem("token") || null);
 
-    // Recupera os dados de `localStorage` assim que o componente for montado
-    onMounted(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            user.value = JSON.parse(storedUser); // Recupera os dados de usuário
-        }
-    });
+    const isAuthenticated = ref(!!token.value);
 
-    // Verifica se o usuário está autenticado
-    const isAuthenticated = computed(() => user.value !== null);
+    if (token.value) {
+        api.defaults.headers.common["Authorization"] = `Bearer ${token.value}`;
+    }
 
-    // Função de login (simulação, substitua pela chamada API real)
     const login = async (credentials) => {
-        // Simulação de uma chamada de API (substitua com sua API real)
-        if (credentials.email === "admin@email.com" && credentials.password === "123") {
-            const response = {
-                token: "meu-token-exemplo", // Substitua com o token retornado pela sua API
-                user: { name: "Admin", email: credentials.email }, // Substitua com os dados reais do usuário
-            };
+        try {
+            const data = await loginApi(credentials);
 
-            // Armazenando os dados no `localStorage` para persistência
-            user.value = response.user;
-            localStorage.setItem("user", JSON.stringify(user.value));
-            localStorage.setItem("token", response.token);
+            user.value = data.usuario;
+            token.value = data.token;
+
+            console.log(token.value);
+
+            isAuthenticated.value = true;
+
+            localStorage.setItem("user", JSON.stringify(user.value)); // "user" agora bate com o que lê
+            localStorage.setItem("token", token.value);
+
+            api.defaults.headers.common["Authorization"] = `Bearer ${token.value}`;
+
+            const cartStore = useCartStore();
+            await cartStore.fetchCart();
 
             return true;
-        } else {
+        } catch (err) {
+            console.error("Erro no login:", err);
             return false;
         }
     };
 
-    // Função de logout
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await logoutApi();
+        } catch (err) {
+            console.warn("Erro ao deslogar na API, limpando mesmo assim.");
+        }
+
         user.value = null;
+        token.value = null;
+        isAuthenticated.value = false;
+
         localStorage.removeItem("user");
         localStorage.removeItem("token");
+
+        delete api.defaults.headers.common["Authorization"];
     };
 
-    return {
-        user,
-        isAuthenticated,
-        login,
-        logout,
+    const register = async (userData) => {
+        try {
+            const data = await registerApi(userData);
+
+            user.value = data.usuario;
+            token.value = data.token;
+            isAuthenticated.value = true;
+
+            localStorage.setItem("user", JSON.stringify(user.value));
+            localStorage.setItem("token", token.value);
+
+            api.defaults.headers.common["Authorization"] = `Bearer ${token.value}`;
+
+            return true;
+        } catch (err) {
+            console.error("Erro no cadastro:", err.response?.data);
+            return false;
+        }
     };
+
+    return { user, token, isAuthenticated, login, logout, register };
 });

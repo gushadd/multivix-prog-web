@@ -6,26 +6,24 @@ const cart = useCartStore();
 defineProps({
     product: Object,
 });
-
-const calculateTotal = (priceString, quantity) => {
-    const numericPrice = parseFloat(priceString.replace(/[^\d,]/g, "").replace(",", "."));
-    const total = numericPrice * quantity;
-    return total.toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-    });
-};
 </script>
 
 <template>
     <div class="product-wrapper">
         <div class="img-wrapper">
-            <img :src="product.image" alt="" />
+            <img :src="product.produto.foto" alt="" />
         </div>
         <div class="info">
-            <h4>{{ product.name }}</h4>
-            <h6>Quantidade: {{ product.quantity }}</h6>
-            <h3>{{ calculateTotal(product.price, product.quantity) }}</h3>
+            <h4>{{ product.produto.nome }}</h4>
+            <h6>Quantidade: {{ product.quantidade }}</h6>
+            <h3>
+                {{
+                    (product.produto.valor * product.quantidade).toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                    })
+                }}
+            </h3>
         </div>
     </div>
 </template>
@@ -43,8 +41,9 @@ const calculateTotal = (priceString, quantity) => {
 }
 
 .img-wrapper {
-    max-width: 30%;
-    width: 30%;
+    max-width: 20%;
+    width: 20%;
+    max-height: 200px;
     overflow: hidden;
     border-radius: 20px;
     display: flex;

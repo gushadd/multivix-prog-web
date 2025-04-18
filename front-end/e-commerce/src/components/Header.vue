@@ -1,6 +1,6 @@
 <script setup>
+import * as yup from "yup";
 import InputText from "primevue/inputtext";
-import DatePicker from "primevue/datepicker";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Tabs from "primevue/tabs";
@@ -30,43 +30,109 @@ const loginPassword = ref("");
 
 // Variáveis de cadastro
 const signInUserName = ref("");
-const signInBirthDate = ref("");
 const signInEmail = ref("");
 const signInPassword = ref("");
 const signInConfirmPassword = ref("");
 
+const loginErrors = ref({});
+const registerErrors = ref({});
+
+const loginSchema = yup.object({
+    email: yup.string().email("Email inválido").required("Email é obrigatório"),
+    password: yup.string().required("Senha é obrigatória"),
+});
+
+const registerSchema = yup.object({
+    name: yup.string().required("Nome é obrigatório"),
+    email: yup.string().email("Email inválido").required("Email é obrigatório"),
+    password: yup.string().min(8, "A senha deve ter no mínimo 8 caracteres").required("Senha é obrigatória"),
+    confirmPassword: yup
+        .string()
+        .oneOf([yup.ref("password")], "As senhas não coincidem")
+        .required("Confirmação de senha é obrigatória"),
+});
+
 // Checar se o usuário já está logado ao carregar a página
 onMounted(() => {
-    if (auth.isAuthenticated) {
+    if (auth.isAuthenticated && auth.user) {
         headerUserName.value = auth.user.name;
         isLoggedIn.value = true;
     }
 });
 
-const logIn = () => {
-    const ok = auth.login({ email: loginEmail.value, password: loginPassword.value });
+const logIn = async () => {
+    try {
+        loginErrors.value = {};
+        await loginSchema.validate({ email: loginEmail.value, password: loginPassword.value }, { abortEarly: false });
 
-    if (ok) {
-        dialogIsVisible.value = false;
-        headerUserName.value = auth.user.name;
-        isLoggedIn.value = true;
-        toast.success("Login realizado com sucesso.");
-    } else {
-        toast.error("Erro ao fazer login.");
+        const ok = await auth.login({ email: loginEmail.value, password: loginPassword.value });
+        if (ok) {
+            dialogIsVisible.value = false;
+            headerUserName.value = auth.user.name;
+            isLoggedIn.value = true;
+            toast.success("Login realizado com sucesso.");
+            loginEmail.value = "";
+            loginPassword.value = "";
+        } else {
+            toast.error("Erro ao fazer login. Verifique suas credenciais.");
+        }
+    } catch (err) {
+        if (err.inner) {
+            err.inner.forEach((e) => {
+                loginErrors.value[e.path] = e.message;
+            });
+        }
     }
 };
 
-const signIn = () => {
-    // Lógica de cadastro (deve ser implementada)
+const signIn = async () => {
+    try {
+        registerErrors.value = {};
+        await registerSchema.validate(
+            {
+                name: signInUserName.value,
+                email: signInEmail.value,
+                password: signInPassword.value,
+                confirmPassword: signInConfirmPassword.value,
+            },
+            { abortEarly: false }
+        );
+
+        const ok = await auth.register({
+            name: signInUserName.value,
+            email: signInEmail.value,
+            password: signInPassword.value,
+            password_confirmation: signInConfirmPassword.value,
+        });
+
+        if (ok) {
+            toast.success("Cadastro realizado com sucesso. Faça login para continuar.");
+            signInUserName.value = "";
+            signInEmail.value = "";
+            signInPassword.value = "";
+            signInConfirmPassword.value = "";
+        } else {
+            toast.error("Erro ao realizar cadastro.");
+        }
+    } catch (err) {
+        if (err.inner) {
+            err.inner.forEach((e) => {
+                registerErrors.value[e.path] = e.message;
+            });
+        }
+    }
 };
 
-const logout = () => {
-    auth.logout();
-    isLoggedIn.value = false;
-    headerUserName.value = "";
-    logoutOp.value.hide(); // esconde o popover
-    toast.success("Logout realizado com sucesso.");
-    router.push("/"); // volta para a home
+const logout = async () => {
+    try {
+        await auth.logout();
+        isLoggedIn.value = false;
+        headerUserName.value = "";
+        toast.success("Logout realizado com sucesso.");
+        router.push("/"); // redireciona para a home após logout
+    } catch (err) {
+        toast.error("Erro ao realizar logout.");
+    }
 };
 
 const goToCart = () => {
@@ -92,8 +158,8 @@ const toggleLogout = (event) => {
             <img src="/images/logo.png" alt="" />
         </RouterLink>
         <search class="search">
-            <InputText class="search-input" placeholder="Pesquise" />
-            <Button icon="pi pi-search" variant="link" />
+            <!-- <InputText class="search-input" placeholder="Pesquise" />
+            <Button icon="pi pi-search" variant="link" /> -->
         </search>
         <div class="header-buttons">
             <Button v-if="isLoggedIn" class="cart-button" label="Carrinho" icon="pi pi-shopping-cart" variant="link" @click="goToCart" :badge="cart.totalItems" />
@@ -127,17 +193,27 @@ const toggleLogout = (event) => {
                 <TabPanel value="0">
                     <div class="flex flex-col justify-center gap-3 w-80 mt-5">
                         <InputText placeholder="Email" v-model="loginEmail" />
+                        <small v-if="loginErrors.email" class="text-red-500">{{ loginErrors.email }}</small>
+
                         <InputText placeholder="Senha" v-model="loginPassword" />
+                        <small v-if="loginErrors.password" class="text-red-500">{{ loginErrors.password }}</small>
+
                         <Button class="mt-6" label="Entrar" @click="logIn" />
                     </div>
                 </TabPanel>
                 <TabPanel value="1">
                     <div class="flex flex-col justify-center gap-3 w-80 mt-5">
                         <InputText placeholder="Nome de Usuário" v-model="signInUserName" />
-                        <DatePicker placeholder="Data de Nascimento" v-model="signInBirthDate" />
+                        <small v-if="registerErrors.name" class="text-red-500">{{ registerErrors.name }}</small>
+
                         <InputText placeholder="Email" v-model="signInEmail" />
+                        <small v-if="registerErrors.email" class="text-red-500">{{ registerErrors.email }}</small>
+
                         <InputText placeholder="Senha" v-model="signInPassword" />
+                        <small v-if="registerErrors.password" class="text-red-500">{{ registerErrors.password }}</small>
+
                         <InputText placeholder="Confirme a senha" v-model="signInConfirmPassword" />
+                        <small v-if="registerErrors.confirmPassword" class="text-red-500">{{ registerErrors.confirmPassword }}</small>
                         <Button class="mt-6" label="Cadastrar" @click="signIn" />
                     </div>
                 </TabPanel>
@@ -198,23 +274,7 @@ img {
 
 @media (max-width: 768px) {
     .logo-wrapper {
-        flex: 0;
-    }
-
-    .search {
-        justify-content: start;
-    }
-
-    .cart-button {
-        display: none;
-    }
-
-    .login-button {
-        display: none;
-    }
-
-    .side-menu-button {
-        display: flex;
+        flex: 0.5;
     }
 }
 </style>
