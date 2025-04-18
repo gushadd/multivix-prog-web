@@ -1,6 +1,7 @@
 <script setup>
 import * as yup from "yup";
 import InputText from "primevue/inputtext";
+import Password from "primevue/password";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Tabs from "primevue/tabs";

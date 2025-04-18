@@ -11,7 +11,14 @@ defineProps({
         </div>
         <div class="product-info">
             <h3>{{ product.nome }}</h3>
-            <p>{{ product.valor }}</p>
+            <p>
+                {{
+                    product.valor.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                    })
+                }}
+            </p>
         </div>
     </RouterLink>
 </template>
@@ -65,7 +72,7 @@ defineProps({
 }
 
 @media (max-width: 900px) {
-    .product{
+    .product {
         width: 300px;
     }
 }
